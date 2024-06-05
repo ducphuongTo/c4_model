@@ -5,12 +5,14 @@ workspace {
         # <variable> = person <name> <description> <tag>
         publicUser = person "Public User" "A user of the book store, who can get book details, without personal bookstore accounts." "User"
         authorizedUser = person "Authorized User" "A user of the book store, who can search book records and administer book details, with personal bookstore accounts." "User"
-
+        userInternal = person "Internal User" "A user who manages the bookstore."
         # Level 1: Context Diagram for Books Store System
         # Software System
         # <variable> = softwareSystem <name> <description> <tag>
         bookStoreSystem = softwareSystem "Book Store System" "Books Store System allows users to get, search book records and administering book details" "Target System" {
             # Level 2: Container Diagram for Books Store System
+            frontStoreApp = container "Front-store Application" "Provides bookstore functionalities" "JavaScript & ReactJS"
+            backOfficeApp = container "Back-office Application" "Provides administration functionalities" "JavaScript & ReactJS"
             searchWebApi = container "Search Web API" "Provides book search functionality via a JSON/HTTPS API." "Go" "Web API"
             publicWebApi = container "Public Web API" "Provides book details functionality via a JSON/HTTPS API." "Go" "Web API"
             bookKafkaSystem = container "Book Kafka System" "Handles book-related domain events." "Apache Kafka 3.0" "Kafka System"
@@ -30,13 +32,23 @@ workspace {
         # External Software Systems
         externalAuthorizeSystem = softwareSystem "External Authorize System" "An external Authorization System for authorization purposes" "External System"
         externalPublisherSystem = softwareSystem "External Publisher System" "An external Publisher System for giving details about books published" "External System"
-
+        shippingService = softwareSystem "Shipping Service" "3rd party service to handle book delivery."
         # Relationship between People/Actor and Software Systems
         publicUser -> bookStoreSystem "Gets book details"
         authorizedUser -> bookStoreSystem "Searchs book records and administers book details"
+        userInternal -> bookstoreSystem "Manages bookstore"
+
+        publicUser -> frontStoreApp "Uses"
+        authorizedUser -> frontStoreApp "Uses"
+        userInternal -> backOfficeApp "Uses"
+
+        frontStoreApp -> publicWebAPI "Interacts with"
+        frontStoreApp -> searchWebApi "Searches books through"
+        backOfficeApp -> adminWebAPI "Interacts with"
+
         bookStoreSystem -> externalAuthorizeSystem "Authorizes users using"
         bookStoreSystem -> externalPublisherSystem "Gets book details about books published using"
-
+        bookStoreSystem -> shippingService "Handles book delivery"
         # Relationship between Containers
         authorizedUser -> searchWebApi "Searching book records via" "JSON/HTTPS"
         searchWebApi -> externalAuthorizeSystem "Authorizes users using" "JWT"
